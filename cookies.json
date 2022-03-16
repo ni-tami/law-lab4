@@ -1,0 +1,20 @@
+[
+    {
+        "name":"snickerdoodle",
+        "flavor":"plain",
+        "price":1.50,
+        "topping": ["chocolate", "sprinkles"]
+    },
+    {
+        "name":"chocolate chip cookie",
+        "flavor":"chocolate",
+        "price":1.70,
+        "topping": ["chocolate", "sugar"]
+    },
+    {
+        "name":"oatmeal cookie",
+        "flavor":"plain",
+        "price":2.0,
+        "topping": ["chocolate", "raisin", "peanut"]
+    }
+]
