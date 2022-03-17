@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -88,8 +90,11 @@ func (db *Database) updateUser(c echo.Context) error {
 		return err
 	}
 
-	filter := bson.M{"tag": cookie.Tag}
-	update := bson.M{"$set": cookie}
+	toUpdate := getNonEmptyBson(c, cookie)
+
+	tag := c.Param("tag")
+	filter := bson.M{"tag": tag}
+	update := bson.M{"$set": toUpdate}
 	result, err := db.coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		log.Fatal(err)
@@ -106,4 +111,29 @@ func (db *Database) deleteCookie(c echo.Context) error {
 		log.Fatal(err)
 	}
 	return c.JSON(http.StatusOK, result.DeletedCount)
+}
+
+func getNonEmptyBson(c echo.Context, obj interface{}) bson.M {
+	f := reflect.ValueOf(obj)
+	fType := f.Type()
+	update := bson.M{}
+	for i := 0; i < f.NumField(); i++ {
+		key := fType.Field(i).Name
+		value := f.Field(i).Interface()
+		switch value.(type) {
+		case string:
+			if value.(string) != "" {
+				update[strings.ToLower(key)] = value
+			}
+		case float64:
+			if value.(float64) > 0 {
+				update[strings.ToLower(key)] = value
+			}
+		case []string:
+			if len(value.([]string)) > 0 {
+				update[strings.ToLower(key)] = value
+			}
+		}
+	}
+	return update
 }
